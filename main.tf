@@ -67,14 +67,28 @@ resource "azurerm_network_security_group" "mgmt-net" {
   resource_group_name = azurerm_resource_group.mgmt.name
 }
 
+resource "azurerm_network_ddos_protection_plan" "main_ddos" {
+  count = var.create_ddos_plan ? 1:0
+  name = "ddos_protection_plan"
+  location = var.deployment_location
+  resource_group_name = azurerm_resource_group.mgmt.name
+}
+
 resource "azurerm_virtual_network" "mgmt-net" {
   name                = "${var.deployment_system}-mgmt-network"
   location            = azurerm_resource_group.mgmt.location
   resource_group_name = azurerm_resource_group.mgmt.name
   address_space       = ["10.0.0.0/16"]
   dns_servers         = ["10.0.0.4", "10.0.0.5"]
-  ddos_protection_plan.enable = true
-  ddos_protection_plan.id     = "" #id of enterprise DDoS-PP
+  
+  dynamic "ddos_protection_plan" {
+    for_each = var.create_ddos_plan == true ? range(1):range(0)
+    iterator = v
+    content {
+      id = azurerm_network_ddos_protection_plan.main_ddos[0].id
+      enable = true
+    }
+  }
 
   subnet {
     name           = "${var.deployment_system}-internal"
