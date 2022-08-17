@@ -1,11 +1,3 @@
-variable "subscription_id" {}
-variable "client_id" {}
-variable "client_certificate_path" {}
-variable "client_certificate_password" {}
-variable "tenant_id" {}
-variable "deployment_location" {}
-variable "deployment_system" {}
-
 terraform {
   required_providers {
     azurerm = {
